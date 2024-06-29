@@ -12,12 +12,21 @@ const sns = new AWS.SNS({ apiVersion: "2010-03-31" });
 exports.handler = async (event, context) => {
   let browser = null;
 
-  const topicArn = process.env.SNS_TOPIC_ARN;
-  if (!topicArn) {
+  const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;
+  if (!SNS_TOPIC_ARN) {
     console.error('SNS_TOPIC_ARN 환경 변수가 설정되지 않았습니다.');
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'SNS_TOPIC_ARN 환경 변수가 설정되지 않았습니다.' }),
+    };
+  }
+
+  const S3_BUCKET = process.env.S3_BUCKET;
+  if (!S3_BUCKET) {
+    console.error('S3_BUCKET 환경 변수가 설정되지 않았습니다.');
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'S3_BUCKET 환경 변수가 설정되지 않았습니다.' }),
     };
   }
 
@@ -54,7 +63,7 @@ exports.handler = async (event, context) => {
     if (latestIndex !== index) {
       // 인덱스 값이 다를 경우 S3 버킷의 파일을 업데이트합니다.
       const putParams = {
-        Bucket: 'youth-house-recruitment-notifier',
+        Bucket: S3_BUCKET,
         Key: 'latest-index.txt',
         Body: index
       };
@@ -80,7 +89,7 @@ exports.handler = async (event, context) => {
       const snsParams = {
         Subject: '[서울특별시 청년안심주택] 새로운 모집 공고가 게시되었습니다.',
         Message: message,
-        TopicArn: topicArn
+        TopicArn: SNS_TOPIC_ARN
       };
       await sns.publish(snsParams).promise();
     }
