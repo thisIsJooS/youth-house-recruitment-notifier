@@ -23,6 +23,11 @@
 
 ---
 
+## 아키텍처
+![Architecture](./assets/architecture.jpg)
+
+---
+
 ## 사용 방법
 
 1. IAM 역할 생성 
