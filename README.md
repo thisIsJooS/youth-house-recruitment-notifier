@@ -5,61 +5,93 @@
 
 ---
 
-## 사용 기술
-
-1. **Amazon EventBridge**
-   - Amazon EventBridge에서 12시간마다 Lambda 함수를 트리거합니다.
-
-2. **AWS Lambda**
-   - Lambda 함수는 서울특별시 청년안심주택 모집공고 페이지에서 최신 공고 게시글의 인덱스를 스크래핑합니다.
-   - 스크래핑된 최신 인덱스를 S3 버킷에 저장된 이전 인덱스와 비교합니다.
-   - 인덱스가 일치하지 않을 경우 새로운 공고가 올라온 것으로 판단하고, 게시글 정보를 추출합니다.
-
-3. **Amazon S3**
-   - Lambda 함수가 실행될 때 수집한 최신 공고 게시글의 인덱스가 담긴 객체 파일을 저장합니다.
-
-4. **Amazon Simple Notification Service (Amazon SNS)**
-   - 추출된 정보를 바탕으로 이메일 내용을 구성하여, Amazon Simple Notification Service(Amazon SNS)를 이용해 Topic을 구독하고 있는 이메일 주소로 메일을 전송합니다.
-
----
-
-## 아키텍처
+## Architecture
 ![Architecture](./assets/architecture.jpg)
 
 ---
 
-## 사용 방법
+## Key Components:
 
-1. IAM 역할 생성 
-   - S3 Get, Put 허용
-   - Amazon SNS 접근 권한 허용
-
-
-2. Amazon SNS 주제 생성
-   - 알림 받고자 하는 메일 주소 구독   
-   - <img src="./assets/sns.png" alt="설명" width="500" height="400">
-
-   
-3. S3 버킷 생성
-   - `latest_index.txt` 객체 생성
-
-
-4. Lambda 함수 생성
-   - 런타임 : Node.js 16.x
-   - 아키텍처 : x86_64
-   - 환경변수 설정 : {SNS_TOPIC_ARN}, {S3_BUCKET}
-   - 계층 추가 :
-     1. chrome-aws-lambda : `arn:aws:lambda:ap-northeast-2:764866452798:layer:chrome-aws-lambda:44`
-     2. puppeteer-core : 수동으로 계층 추가 - [nodejs.zip](https://github.com/thisIsJooS/youth-house-recruitment-notifier/blob/main/assets/nodejs.zip)
-   - <img src="./assets/lambda1.png" alt="설명" width="500" height="310">
-   - <img src="./assets/lambda_layer.png" alt="설명" width="500" height="90">
-
-
-5. Amazon EventBridge 규칙 생성 
-   - 일정 정의 -> 지정한 시간 주기로 Lambda 함수 호출
-   - <img src="./assets/eventBridge.png" alt="설명" width="500" height="310">
+- [Amazon EventBridge](https://aws.amazon.com/ko/eventbridge/): A serverless event bus that connects applications using events from different sources..
+- [AWS Lambda](https://aws.amazon.com/ko/lambda//) + [AWS Lambda](https://aws.amazon.com/lambda/): A serverless compute service that runs code in response to events without provisioning or managing servers.
+- [Amazon S3](https://aws.amazon.com/ko/s3//): An object storage service that provides scalable, durable, and secure storage for any type of data.
+- [Amazon Simple Notification Service](https://aws.amazon.com/ko/sns/): A fully managed messaging service for both application-to-application and application-to-person communication.
 
 ---
 
-## 결과
+## Deploy
+
+> [!Important]
+> - You have installed the latest version of [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
+> - You have an [AWS account](https://aws.amazon.com/free/)
+> - You have the necessary permissions to create and manage AWS resources
+
+
+### Prerequisites
+
+1. Clone the repository:
+    ```
+    git clone https://github.com/thisIsJooS/youth-house-recruitment-notifier.git
+    ```
+
+### Step 1: Deploy 
+
+1. Move directory:
+    ```
+    cd youth-house-recruitment-notifier
+   ```
+
+2. Configure your AWS credentials:
+    ```
+    aws configure
+    ```
+
+3. Deploy CloudFormation stacks:
+   ```
+   aws cloudformation create-stack \
+    --stack-name NotifierStack \
+    --template-body file://notifier-template.yaml \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --parameters ParameterKey=SubscriptionEmail,ParameterValue=<Your Email>
+   ```
+   Please replace <Your Email> with the email address where you want to receive notifications.
+
+
+### Step 2: Confirm 
+1. Confirm subscription:   
+   A subscription confirmation email will have been sent to the registered email. Please click the hyperlink 'Confirm subscription'.
+   ![mail](./assets/confirmation-mail.png)
+   ![confirmed](./assets/subscription-confirmed.png)
+   
+
+
+2. Wait until the stack creation is complete:
+   ```
+   aws cloudformation wait stack-create-complete --stack-name NotifierStack
+   ```
+   It waits until the stack creation is complete. If the stack is successfully created, the command will exit, and if it fails, an error message will be displayed.
+
+---
+### Remove resources
+
+> [!Important]
+> Please be mindful of the costs for all deployed resources. Make sure to delete resources after you are finished using them.
+
+```
+aws cloudformation delete-stack --stack-name NotifierStack
+```
+
+--- 
+
+## Result
+You will receive an email notification every day at 9 AM KST when a new announcement is posted.
 ![결과](./assets/result.png)
+
+---
+## Contacts
+
+- thisis.joos@gmail.com
+
+## License
+
+This library is licensed under the MIT-0 License. See [the LICENSE file](./LICENSE).
