@@ -2,6 +2,7 @@
 [서울특별시 청년안심주택 모집공고 바로가기](https://soco.seoul.go.kr/youth/bbs/BMSR00015/list.do?menuNo=400008)
 
 이 서비스는 서울특별시 청년안심주택의 새로운 모집공고가 올라올 경우 등록한 이메일 주소로 알림 메일을 보내주는 서비스입니다.
+This service sends a notification email to the registered email address when a new recruitment announcement for the Seoul Youth House Recruitment is posted.
 
 ---
 
@@ -13,7 +14,7 @@
 ## Key Components:
 
 - [Amazon EventBridge](https://aws.amazon.com/ko/eventbridge/): A serverless event bus that connects applications using events from different sources..
-- [AWS Lambda](https://aws.amazon.com/ko/lambda//) + [AWS Lambda](https://aws.amazon.com/lambda/): A serverless compute service that runs code in response to events without provisioning or managing servers.
+- [AWS Lambda](https://aws.amazon.com/ko/lambda//): A serverless compute service that runs code in response to events without provisioning or managing servers.
 - [Amazon S3](https://aws.amazon.com/ko/s3//): An object storage service that provides scalable, durable, and secure storage for any type of data.
 - [Amazon Simple Notification Service](https://aws.amazon.com/ko/sns/): A fully managed messaging service for both application-to-application and application-to-person communication.
 
@@ -54,7 +55,7 @@
     --capabilities CAPABILITY_NAMED_IAM \
     --parameters ParameterKey=SubscriptionEmail,ParameterValue=<Your Email>
    ```
-   Please replace <Your Email> with the email address where you want to receive notifications.
+   **Please replace <Your Email> with the email address where you want to receive notifications.**
 
 
 ### Step 2: Confirm 
